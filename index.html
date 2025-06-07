@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ADDED: Marked.js for Markdown to HTML conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for webkit browsers */
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-content::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 3px;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        /* Hide sidebar on small screens by default */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+        }
+        /* Styling for generated content */
+        #content-area h1 {
+            font-size: 2.25rem; /* 3xl */
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937; /* gray-800 */
+        }
+        #content-area h2 {
+            font-size: 1.875rem; /* 2xl */
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+            padding-bottom: 0.5rem;
+        }
+        #content-area p {
+            margin-bottom: 1rem;
+            color: #374151; /* gray-700 */
+            line-height: 1.6;
+        }
+        #content-area a {
+            color: #2563eb; /* blue-600 */
+            text-decoration: underline;
+        }
+        #content-area ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        #content-area code {
+            background-color: #f3f4f6; /* gray-100 */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        #content-area pre {
+            background-color: #1f2937; /* gray-800 */
+            color: #f9fafb; /* gray-50 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+        #content-area pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-white w-64 md:w-72 lg:w-80 h-full fixed md:relative z-20 md:z-auto shadow-lg md:shadow-none flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-gray-800">C# Guide</h1>
+            <button id="close-sidebar-btn" class="md:hidden text-gray-600 hover:text-gray-800">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="sidebar-content flex-grow overflow-y-auto p-4">
+            <nav id="topic-nav">
+                <p class="text-gray-500">Loading navigation...</p>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="flex items-center justify-between p-4">
+                <button id="menu-btn" class="md:hidden text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div id="breadcrumb" class="text-sm text-gray-500 hidden sm:block">
+                    <!-- Breadcrumb will be injected here -->
+                </div>
+                <div class="flex items-center space-x-4">
+                     <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-search"></i></button>
+                     <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-cog"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <div id="content-area" class="p-6 md:p-8 lg:p-10 flex-grow">
+            <p class="text-gray-500">Please select a topic from the menu.</p>
+        </div>
+
+        <footer class="bg-white p-4 text-center text-sm text-gray-500 border-t">
+            © 2024 Your Company. All rights reserved.
+        </footer>
+    </main>
+    
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const topicNav = document.getElementById('topic-nav');
+        const contentArea = document.getElementById('content-area');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const menuBtn = document.getElementById('menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        let activeLink = null;
+        let topicsData = [];
+
+        // Main initialization function
+        async function initializeApp() {
+            try {
+                const response = await fetch('nav.json');
+                if (!response.ok) {
+                   throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                topicsData = await response.json();
+                renderNav();
+                setupNavEventListeners();
+                
+                // Load initial content based on URL hash
+                const initialId = window.location.hash.substring(1);
+                if (initialId) {
+                    await loadContentById(initialId);
+                } else {
+                    // Load the very first item if no hash is present
+                    const firstTopicFile = topicsData[0]?.subtopics[0];
+                    if (firstTopicFile) {
+                        window.location.hash = firstTopicFile.id;
+                        await loadContentById(firstTopicFile.id);
+                    }
+                }
+            } catch (error) {
+                console.error("Could not load navigation:", error);
+                topicNav.innerHTML = '<p class="text-red-500">Failed to load navigation. Please ensure nav.json exists.</p>';
+                contentArea.innerHTML = `<p class="text-red-500">Could not initialize the documentation. Check the browser console for more details.</p>`;
+            }
+        }
+
+        function renderNav() {
+            let navHtml = '<ul>';
+            topicsData.forEach(topic => {
+                navHtml += `<li class="mb-2">`;
+                navHtml += `<button class="w-full text-left font-semibold text-gray-700 hover:bg-gray-200 p-2 rounded-md flex justify-between items-center focus:outline-none" data-topic-id="${topic.id}">
+                                <span>${topic.title}</span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"></i>
+                            </button>`;
+                navHtml += `<ul class="ml-4 mt-1 hidden">`;
+                topic.subtopics.forEach(sub => {
+                    // Store the file path in a data attribute
+                    navHtml += `<li><a href="#${sub.id}" data-content-id="${sub.id}" data-file-path="${sub.file}" data-parent-id="${topic.id}" class="block p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors duration-150">${sub.title}</a></li>`;
+                });
+                navHtml += `</ul></li>`;
+            });
+            navHtml += '</ul>';
+            topicNav.innerHTML = navHtml;
+        }
+
+        async function loadContentById(id) {
+            const link = topicNav.querySelector(`a[data-content-id="${id}"]`);
+            if (!link) {
+                contentArea.innerHTML = `<h1 class="text-3xl font-bold mb-4 text-gray-800">Page Not Found</h1><p>The content for '${id}' could not be found in the navigation.</p>`;
+                return;
+            }
+
+            const filePath = link.dataset.filePath;
+            contentArea.innerHTML = `<p class="text-gray-500">Loading ${link.textContent}...</p>`;
+
+            try {
+                const response = await fetch(filePath);
+                 if (!response.ok) {
+                   throw new Error(`Failed to fetch ${filePath}. Status: ${response.status}`);
+                }
+                const markdown = await response.text();
+                // Use marked.js to convert markdown to HTML
+                contentArea.innerHTML = marked.parse(markdown);
+
+                updateUIForActiveLink(link);
+            } catch (error) {
+                console.error("Error loading content:", error);
+                contentArea.innerHTML = `<p class="text-red-500">Error loading content from <strong>${filePath}</strong>. Please check if the file exists and the path is correct in nav.json.</p>`;
+            }
+        }
+        
+        function updateUIForActiveLink(link) {
+            const parentId = link.dataset.parentId;
+            const parentTopic = topicsData.find(t => t.id === parentId);
+            const subtopic = parentTopic.subtopics.find(s => s.id === link.dataset.contentId);
+            
+            breadcrumb.innerHTML = `<span class="font-semibold">${parentTopic.title}</span> <i class="fas fa-angle-right mx-2"></i> <span>${subtopic.title}</span>`;
+
+            if (activeLink) {
+                activeLink.classList.remove('bg-blue-100', 'text-blue-700', 'font-semibold');
+            }
+            link.classList.add('bg-blue-100', 'text-blue-700', 'font-semibold');
+            activeLink = link;
+
+            // Ensure the parent topic accordion is open
+            const parentButton = topicNav.querySelector(`button[data-topic-id="${parentId}"]`);
+            if (parentButton) {
+               const sublist = parentButton.nextElementSibling;
+               if (sublist.classList.contains('hidden')) {
+                   sublist.classList.remove('hidden');
+                   parentButton.querySelector('i').classList.add('rotate-180');
+               }
+            }
+        }
+        
+        function setupNavEventListeners() {
+            topicNav.addEventListener('click', async (e) => {
+                const button = e.target.closest('button[data-topic-id]');
+                if (button) {
+                    const sublist = button.nextElementSibling;
+                    const icon = button.querySelector('i');
+                    sublist.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                    return;
+                }
+
+                const link = e.target.closest('a[data-content-id]');
+                if (link) {
+                    e.preventDefault();
+                    const id = link.dataset.contentId;
+                    if (window.location.hash !== `#${id}`) {
+                        window.location.hash = id;
+                        await loadContentById(id);
+                    }
+                    if (window.innerWidth < 768) {
+                       toggleSidebar();
+                    }
+                }
+            });
+        }
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+
+        // Add event listeners for sidebar controls
+        menuBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+        
+        // Listen for hash changes to navigate back/forward
+        window.addEventListener('hashchange', () => {
+            const id = window.location.hash.substring(1);
+            if(id) loadContentById(id);
+        });
+
+        // Start the application
+        initializeApp();
+    });
+</script>
+
+</body>
+</html>
