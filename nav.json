@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Introduction",
+    "id": "introduction",
+    "subtopics": [
+      { "title": "Welcome", "id": "welcome", "file": "docs/introduction/welcome.md" },
+      { "title": "What is C#?", "id": "what-is-csharp", "file": "docs/introduction/what-is-csharp.md" },
+      { "title": ".NET Ecosystem", "id": "dotnet-ecosystem", "file": "docs/introduction/dotnet-ecosystem.md" }
+    ]
+  },
+  {
+    "title": "A Tour of C#",
+    "id": "tour-of-csharp",
+    "subtopics": [
+      { "title": "Program Structure", "id": "program-structure", "file": "docs/tour-of-csharp/program-structure.md" },
+      { "title": "Types and Variables", "id": "types-variables", "file": "docs/tour-of-csharp/types-variables.md" }
+    ]
+  },
+  {
+    "title": "Classes and Objects",
+    "id": "classes-objects",
+    "subtopics": []
+  }
+]
